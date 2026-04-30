@@ -13,8 +13,9 @@ import (
 // PushOptions contains the list of options which can be set whilst pushing a
 // package.
 type PushOptions struct {
-	onProgress func(progress float64)
-	auths      map[string]config.AuthConfig
+	onProgress    func(progress float64)
+	auths         map[string]config.AuthConfig
+	allowInsecure bool
 }
 
 // PushOption is an option function which is used to modify PushOptions.
@@ -44,6 +45,20 @@ func (ppo *PushOptions) OnProgress() func(float64) {
 // domain was not found.
 func (ppo *PushOptions) Auths() map[string]config.AuthConfig {
 	return ppo.auths
+}
+
+// AllowInsecure returns whether insecure connections are permitted.
+func (ppo *PushOptions) AllowInsecure() bool {
+	return ppo.allowInsecure
+}
+
+// WithPushAllowInsecure enables or disables insecure (skip TLS verification)
+// connections when pushing the package.
+func WithPushAllowInsecure(allowInsecure bool) PushOption {
+	return func(opts *PushOptions) error {
+		opts.allowInsecure = allowInsecure
+		return nil
+	}
 }
 
 // WithPushProgressFunc set an optional progress function which is used as a

@@ -196,6 +196,7 @@ $(addprefix $(.PROXY), $(BIN)):
 		-buildmode=pie \
 		-gcflags=all='$(GO_GCFLAGS)' \
 		-ldflags='$(GO_LDFLAGS)' \
+		-buildvcs=false \
 		-o $(DISTDIR)/$@ \
 		$(WORKDIR)/cmd/$@
 

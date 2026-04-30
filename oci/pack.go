@@ -907,7 +907,7 @@ func (ocipack *ociPackage) Push(ctx context.Context, opts ...pack.PushOption) er
 				authConfig.Username = auth.User
 				authConfig.Password = auth.Token
 
-				if !auth.VerifySSL {
+				if !auth.VerifySSL || popts.AllowInsecure() {
 					transport.TLSClientConfig = &tls.Config{
 						InsecureSkipVerify: true,
 					}
@@ -917,10 +917,17 @@ func (ocipack *ociPackage) Push(ctx context.Context, opts ...pack.PushOption) er
 			authConfig.Username = auth.User
 			authConfig.Password = auth.Token
 
-			if !auth.VerifySSL {
+			if !auth.VerifySSL || popts.AllowInsecure() {
 				transport.TLSClientConfig = &tls.Config{
 					InsecureSkipVerify: true,
 				}
+			}
+		}
+
+		// If allow-insecure is set but no auth entry matched, still skip TLS.
+		if popts.AllowInsecure() && transport.TLSClientConfig == nil {
+			transport.TLSClientConfig = &tls.Config{
+				InsecureSkipVerify: true,
 			}
 		}
 

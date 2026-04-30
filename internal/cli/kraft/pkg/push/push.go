@@ -178,6 +178,18 @@ func (opts *PushOptions) Run(ctx context.Context, args []string) error {
 		return errors.New("no packages found")
 	}
 
+	auths := config.G[config.KraftKit](ctx).Auth
+
+	// If --allow-insecure is set, override VerifySSL on all auth entries so that
+	// both the OCI push path and the handler's PushDescriptor skip TLS
+	// verification.
+	if opts.AllowInsecure {
+		for domain, auth := range auths {
+			auth.VerifySSL = false
+			auths[domain] = auth
+		}
+	}
+
 	var processes []*paraprogress.Process
 
 	for _, p := range packages {
@@ -191,7 +203,8 @@ func (opts *PushOptions) Run(ctx context.Context, args []string) error {
 			func(ctx context.Context, w func(progress float64)) error {
 				return p.Push(ctx,
 					pack.WithPushProgressFunc(w),
-					pack.WithPushAuthConfig(config.G[config.KraftKit](ctx).Auth),
+					pack.WithPushAuthConfig(auths),
+					pack.WithPushAllowInsecure(opts.AllowInsecure),
 				)
 			},
 		))
